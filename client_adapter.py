@@ -24,7 +24,7 @@ async def handle_connection(reader: asyncio.StreamReader,
                         data = await reader.read(4096)
                         await ws.send(data)
                 except Exception as e:
-                    print(f"{e}")
+                    print(f"[tcp_to_ws] Error: {e}")
                     await ws.close()
 
             async def ws_to_tcp():
@@ -33,8 +33,6 @@ async def handle_connection(reader: asyncio.StreamReader,
                         data = message
                         writer.write(data)
                         await writer.drain()
-                except websockets.ConnectionClosed:
-                    print("[WS] Relay closed connection")
                 except Exception as e:
                     print(f"[ws_to_tcp] Error: {e}")
                 finally:
