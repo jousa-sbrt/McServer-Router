@@ -1,22 +1,34 @@
-import asyncio
+
+import socket
 import time
 
-import websockets
+HOST = "DEIN-ENDPOINT-HOST"
+PORT = 12345
 
 
-SERVER_URL = "wss://mcserver-router.onrender.com/ws"
+def main():
+    with socket.create_connection((HOST, PORT)) as s:
+        print(f"Verbunden mit {HOST}:{PORT}")
+        f = s.makefile("rwb", buffering=0)
 
-async def ping_test():
-    async with websockets.connect(SERVER_URL) as ws:
-        print("Verbunden")
         while True:
             t0 = time.time()
-            await ws.send("ping")
-            msg = await ws.recv()
+            # "ping\n" senden
+            msg = b"ping\n"
+            f.write(msg)
+
+            # Antwortzeile lesen
+            line = f.readline()
+            if not line:
+                print("Server hat die Verbindung geschlossen.")
+                break
+
             t1 = time.time()
-            rtt_ms = (t1 - t0) * 1000
-            print(f"RTT: {rtt_ms:.1f} ms")
-            await asyncio.sleep(1)
+            rtt_ms = (t1 - t0) * 1000.0
+            print(f"Antwort: {line.decode().strip()} | RTT: {rtt_ms:.1f} ms")
+
+            time.sleep(1)
+
 
 if __name__ == "__main__":
-    asyncio.run(ping_test())
+    main()
